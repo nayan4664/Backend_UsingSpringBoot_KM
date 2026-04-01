@@ -1,5 +1,12 @@
 FROM eclipse-temurin:17-jdk
 WORKDIR /app
 COPY . .
+
+# ✅ ADD THIS LINE (IMPORTANT FIX)
+RUN chmod +x mvnw
+
+# Build
 RUN ./mvnw clean package -DskipTests
-CMD ["java", "-jar", "target/*.jar"]
+
+# Run
+CMD ["sh", "-c", "java -jar target/*.jar"]
