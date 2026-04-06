@@ -1,9 +1,15 @@
-FROM maven:3.9-eclipse-temurin-17
+# Stage 1: Build
+FROM maven:3.9-eclipse-temurin-17 AS builder
 WORKDIR /app
-COPY . .
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
 
-# Build
+COPY . .
 RUN mvn clean package -DskipTests
 
-# Run
-CMD ["sh", "-c", "java -jar target/*.jar"]
+# Stage 2: Runtime
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
+
+CMD ["java", "-jar", "app.jar"]
