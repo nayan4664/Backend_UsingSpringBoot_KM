@@ -39,8 +39,19 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         String normalizedEmail = request.email().trim().toLowerCase();
-        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "User already registered");
+        
+        var existingUserOpt = userRepository.findByEmailIgnoreCase(normalizedEmail);
+        if (existingUserOpt.isPresent()) {
+            User existingUser = existingUserOpt.get();
+            existingUser.setFullName(request.fullName().trim());
+            existingUser.setPasswordHash(hashPassword(request.password()));
+            existingUser.setRole(request.role().trim());
+            existingUser.setContactNo(request.contactNo().trim());
+            existingUser.setAddress(request.address().trim());
+            existingUser.setCompanyName(request.companyName().trim());
+            existingUser.setActive(true);
+            User savedUser = userRepository.save(existingUser);
+            return toResponse(savedUser);
         }
 
         User savedUser = userRepository.save(new User(
